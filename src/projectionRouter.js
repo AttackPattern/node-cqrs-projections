@@ -30,25 +30,10 @@ export default class ProjectionRouter extends Router {
             try {
               let identity = ctx.$identity;
               let id = ctx.params.id;
-              if (id === 'mine') {
-                if (!identity || identity.isAnonymous()) {
-                  ctx.status = 401;
-                  return ctx.body = { error: 'No authorization information supplied' };
-                }
-                if (!projection.getMine) {
-                  ctx.status = 404;
-                  return ctx.body = { error: `No mine endpoint for ${name}` };
-                }
-                let result = await projection.getMine(identity);
-                let { _id, __v, ...data } = (Array.isArray(result) && result.length) ? result[0] : result;
-                ctx.body = data;
-              }
-              else {
-                let result = await projection.getById(id, ctx.$identity);
-                let { _id, __v, ...data } = (Array.isArray(result) && result.length) ? result[0] : result;
-                ctx.body = data;
-                ctx.status = 200;
-              }
+              let result = await projection.getById(id, ctx.$identity);
+              let { _id, __v, ...data } = (Array.isArray(result) && result.length) ? result[0] : result;
+              ctx.body = data;
+              ctx.status = 200;
             }
             catch (e) {
               console.log(`Failed loading projection /${name}`, e);
