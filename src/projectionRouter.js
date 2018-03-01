@@ -13,7 +13,7 @@ export default class ProjectionRouter extends Router {
   constructor(projections) {
     super();
 
-    Object.entries(projections).map(({
+    Object.entries(projections).forEach(({
       [0]: name,
       [1]: projections
     }) => {
