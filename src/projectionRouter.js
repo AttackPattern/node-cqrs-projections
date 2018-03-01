@@ -1,25 +1,28 @@
 import Router from 'koa-router';
 
+function stripMetadata(data) {
+  if (data && typeof data === 'object' && !(data instanceof Date)) {
+    delete data._id;
+    delete data.__v;
+    Object.entries(data).forEach(({ [1]: i }) => stripMetadata(i));
+  }
+  return data;
+}
+
 export default class ProjectionRouter extends Router {
   constructor(projections) {
     super();
 
-    Object.entries(projections).map(({
+    Object.entries(projections).forEach(({
       [0]: name,
       [1]: projections
     }) => {
       projections.forEach(projection => {
         this.get(`/${name}/${projection.name()}`, async (ctx, next) => {
           try {
-            let data = await projection.get(ctx.query, ctx.$identity);
-            if (Array.isArray(data)) {
-              data.forEach(r => {
-                delete r._id;
-                delete r.__v;
-              });
-            }
+            let result = await projection.get(ctx.query, ctx.$identity);
             ctx.status = 200;
-            return ctx.body = data;
+            return ctx.body = stripMetadata(result);
           }
           catch (e) {
             console.log(`Failed loading projection /${name}`, e);
@@ -28,11 +31,9 @@ export default class ProjectionRouter extends Router {
         })
           .get(`/${name}/${projection.name()}/:id`, async (ctx, next) => {
             try {
-              let identity = ctx.$identity;
               let id = ctx.params.id;
               let result = await projection.getById(id, ctx.$identity);
-              let { _id, __v, ...data } = (Array.isArray(result) && result.length) ? result[0] : result;
-              ctx.body = data;
+              ctx.body = stripMetadata(result);
               ctx.status = 200;
             }
             catch (e) {
