@@ -1,18 +1,12 @@
 import Router from 'koa-router';
 
 function stripMetadata(data) {
-  if (typeof data !== 'object' || data instanceof Date) {
-    return data;
+  if (data && typeof data === 'object' && !(data instanceof Date)) {
+    delete data._id;
+    delete data.__v;
+    Object.entries(data).forEach(({ [1]: i }) => stripMetadata(i));
   }
-
-  // TODO (brett) - This is messing up arrays
-  const { _id, __v, ...stripped } = data;
-
-  return Object.entries(stripped)
-    .reduce((result, { [0]: key, [1]: value }) => {
-      result[key] = stripMetadata(value);
-      return result;
-    }, {});
+  return data;
 }
 
 export default class ProjectionRouter extends Router {
@@ -28,7 +22,7 @@ export default class ProjectionRouter extends Router {
           try {
             let result = await projection.get(ctx.query, ctx.$identity);
             ctx.status = 200;
-            return ctx.body = stripMetadata(Array.isArray(result) && result.length ? result[0] : result);
+            return ctx.body = stripMetadata(result);
           }
           catch (e) {
             console.log(`Failed loading projection /${name}`, e);
@@ -39,7 +33,7 @@ export default class ProjectionRouter extends Router {
             try {
               let id = ctx.params.id;
               let result = await projection.getById(id, ctx.$identity);
-              ctx.body = stripMetadata(Array.isArray(result) && result.length ? result[0] : result);
+              ctx.body = stripMetadata(result);
               ctx.status = 200;
             }
             catch (e) {
