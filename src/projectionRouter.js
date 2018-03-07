@@ -32,7 +32,7 @@ export default class ProjectionRouter extends Router {
           .get(`/${name}/${projection.name()}/:id`, async (ctx, next) => {
             try {
               let id = ctx.params.id;
-              let result = await projection.getById(id, ctx.$identity);
+              let result = (await projection.get({ id }, ctx.$identity))[0];
               ctx.body = stripMetadata(Array.isArray(result) ? result[0] : result);
               ctx.status = 200;
             }
