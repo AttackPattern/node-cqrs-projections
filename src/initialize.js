@@ -20,7 +20,7 @@ export default class Projections {
 
     const views = Object.entries(viewFolder)
       .reduce((result, { [0]: client, [1]: clientViews }) => {
-        result[client] = Object.entries(clientViews).map(({ [1]: View }) => new View(stores));
+        result[client] = Object.entries(clientViews).map(({ [1]: View }) => container.resolve(View, [stores]));
         return result;
       }, {});
 
