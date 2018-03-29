@@ -15,32 +15,21 @@ export default class ProjectionRouter extends Router {
 
     Object.entries(projections).forEach(({
       [0]: name,
-      [1]: projections
+      [1]: clientProjections
     }) => {
-      projections.forEach(projection => {
-        this.get(`/${name}/${projection.name}`, async (ctx, next) => {
+      clientProjections.forEach(projection => {
+        this.get(`/${name}/${projection.name}/:id?/:entity?`, async (ctx, next) => {
           try {
-            let result = await projection.view.get(ctx.query, ctx.$identity);
+            let { id, entity } = ctx.params;
+            let result = await projection.view.get(id ? { id, ...ctx.query } : ctx.query, ctx.$identity, entity);
             ctx.status = 200;
-            return ctx.body = stripMetadata(result);
+            ctx.body = stripMetadata(id && !entity ? result[0] : result);
           }
           catch (e) {
             console.log(`Failed loading projection /${name}`, e);
             return next();
           }
-        })
-          .get(`/${name}/${projection.name}/:id`, async (ctx, next) => {
-            try {
-              let id = ctx.params.id;
-              let result = (await projection.view.get({ id }, ctx.$identity))[0];
-              ctx.body = stripMetadata(Array.isArray(result) ? result[0] : result);
-              ctx.status = 200;
-            }
-            catch (e) {
-              console.log(`Failed loading projection /${name}`, e);
-              return next();
-            }
-          });
+        });
       });
     });
   }
