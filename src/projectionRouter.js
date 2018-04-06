@@ -21,7 +21,7 @@ export default class ProjectionRouter extends Router {
         this.get(`/${name}/${projection.name}/:id?/:facet?`, async (ctx, next) => {
           try {
             let { id, facet } = ctx.params;
-            let result = await projection.view.get(id ? { id, ...ctx.query } : ctx.query, ctx.$idfacet, facet);
+            let result = await projection.view.get(id ? { id, ...ctx.query } : ctx.query, ctx.$identity, facet);
             ctx.status = 200;
             ctx.body = stripMetadata(id && !facet ? result[0] : result);
           }
