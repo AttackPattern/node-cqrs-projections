@@ -1,5 +1,5 @@
 {
-  "name": "node-cqrs-projections",
+  "name": "@attackpattern/node-cqrs-projections",
   "version": "0.1.0",
   "description": "Library of base classes for Node CQRS projections implementation",
   "main": "index.js",
