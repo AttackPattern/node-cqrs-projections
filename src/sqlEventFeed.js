@@ -23,7 +23,7 @@ export default class EventStore {
     this.projectionState = projectionState;
 
     this.queue = queue(async (event, callback) => {
-      console.log(`Event: ${event.aggregate || ''} ${event.type}`);
+      console.log(`Event: ${event.aggregateId} ${event.aggregate}.${event.type}`);
       await Promise.all(this.subscriptions.map(async s => {
         try {
           return await s(event);

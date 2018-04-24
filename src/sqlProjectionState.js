@@ -32,7 +32,6 @@ export default class ProjectionState {
   }
 
   setBookmark = async bookmark => {
-    console.log('Bookmark: setting projection bookmark to', bookmark);
     let state = await ProjectionStateModel.findOne({ id: key });
 
     if (!state) {
