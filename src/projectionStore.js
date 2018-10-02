@@ -17,7 +17,7 @@ export default function connect(mongoUrl) {
         if (mongoose.connection.readyState !== 0) {
           setTimeout(retry, 5000);
         }
-        mongoose.connect(mongoUrl)
+        mongoose.connect(mongoUrl, { useNewUrlParser: true })
           .then(function () {
             console.log('Connected to Mongo');
             resolve();
