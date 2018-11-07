@@ -7,9 +7,10 @@ import SqlProjectionState from './sqlProjectionState';
 import SqlEventFeed from './sqlEventFeed';
 
 import projectionStore from './projectionStore';
+import Identity from './identity';
 
 export default class Projections {
-  static initialize = async ({ container, config, db, storeFolder, viewFolder, tokenDecorator }) => {
+  static initialize = async ({ container, config, db, storeFolder, viewFolder, identityMapper = token => new Identity(token) }) => {
     container.register('db', () => db);
 
     const stores = Object.entries(storeFolder)
@@ -40,7 +41,7 @@ export default class Projections {
       middleware: {
         identity: new IdentityMiddleware(new AuthTokenMapper({
           secret: config.decrypt(config('authentication').secret),
-          decorator: tokenDecorator
+          identityMapper
         })).inject
       }
     };
