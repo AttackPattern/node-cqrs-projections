@@ -43,7 +43,9 @@ export default class Projections {
           secret: config.decrypt(config('authentication').secret),
           identityMapper
         })).inject
-      }
+      },
+      stores,
+      views
     };
   }
 }

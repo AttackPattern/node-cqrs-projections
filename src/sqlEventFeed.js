@@ -29,7 +29,13 @@ export default class EventStore {
           return await s(event);
         }
         catch (err) {
-          console.log(err);
+          global.log ? global.log.note({
+            error: err,
+            aggregateId: event.aggregateId,
+            aggregate: event.aggregate,
+            type: event.type,
+            event: event
+          }) : console.log(err);
         }
       }));
       return callback();
@@ -76,7 +82,7 @@ export default class EventStore {
         newBookmark = lastEvent.id;
       }
 
-      let lastRecord = (await this.Event.query(qb => qb.orderBy('id', 'desc')).fetchPage({ pageSize: 1 })).toJSON() [0];
+      let lastRecord = (await this.Event.query(qb => qb.orderBy('id', 'desc')).fetchPage({ pageSize: 1 })).toJSON()[0];
       let lastBookmark = lastRecord && lastRecord.id;
 
       return { events: events.map(e => fromStoredEvent(e)), bookmark: newBookmark, lastBookmark };
