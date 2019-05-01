@@ -18,9 +18,10 @@ function fromStoredEvent(event) {
 }
 
 export default class EventStore {
-  constructor({ db, projectionState }) {
+  constructor({ db, projectionState, activeState }) {
     this.subscriptions = [];
     this.projectionState = projectionState;
+    this.activeState = activeState;
 
     this.queue = queue(async (event, callback) => {
       console.log(`Event: ${event.aggregateId} ${event.aggregate}.${event.type}`);
@@ -38,6 +39,9 @@ export default class EventStore {
           }) : console.log(err);
         }
       }));
+      if (this.activeState.state === 'resetting' && this.queue.length() === 0) {
+        await this.activeState.swap && this.activeState.swap();
+      }
       return callback();
     });
 
@@ -95,7 +99,7 @@ export default class EventStore {
     }
   }
 
-  reset = async () => {
-    await this.projectionState.reset();
+  reset = async activeState => {
+    await this.projectionState.reset(activeState);
   }
 }
