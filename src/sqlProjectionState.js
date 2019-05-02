@@ -14,7 +14,7 @@ const ActiveDataSchema = new mongoose.Schema({
 
 export default class ProjectionState {
   constructor() {
-    this.key = defaultKey;
+    this.projectionStateKey = defaultKey;
     this.ProjectionStateModel = mongoose.model(defaultKey, ProjectionStateSchema);
     this.ActiveDataModel = mongoose.model(activeDataKey, ActiveDataSchema);
   }
@@ -22,18 +22,19 @@ export default class ProjectionState {
       let state = await this.ActiveDataModel.findOne({ id: activeDataKey });
       // change over ProjectionState key as well.
       if (state?.key) {
-        this.key = `${defaultKey}.${state?.key}`;
+        this.projectionStateKey = `${defaultKey}.${state?.key}`;
         this.ProjectionStateModel = mongoose.model(this.key, ProjectionStateSchema);
       }
       return state?.key || '';
   }
 
   setKey = async activeKey => {
+    // this is used to store the UUID key that is postfixed to every store to handle reset swaps
     let state = await this.ActiveDataModel.findOne({ id: activeDataKey });
 
     if (!state) {
       state = new this.ActiveDataModel();
-      // always set the id to the key, we only ever want to search against this one key
+      // always set the id to the activeDataKey, we only have 1 entry in this model so it works
       state.id = activeDataKey;
     }
 
@@ -75,19 +76,22 @@ export default class ProjectionState {
     await state.save();
   }
 
-  reset = async activeState => {
-    const newKey = `${defaultKey}.${activeState.key}`;
+  reset = async key => {
+    // key coming in is a UUID, not the full prefix key for the projection bookmark store
+    const newProjectionStateKey = `${defaultKey}.${key}`;
+    // store the old model so we can delete it after we have updated the new model
     const oldModel = this.ProjectionStateModel;
     // we update the schema to point to the new key
-    this.ProjectionStateModel = mongoose.model(newKey, ProjectionStateSchema);
-    // Really this is creating a new model all together since the model key
-    // just changed.
+    this.ProjectionStateModel = mongoose.model(newProjectionStateKey, ProjectionStateSchema);
+    // change model key, which creates a new collection in db. While this is a .findOneAndUpdate
+    // it will never find anything since this is a new model, thus it will create it every time
     await this.ProjectionStateModel
       .findOneAndUpdate({ id: defaultKey }, { bookmark: 0 }, { upsert: true });
 
     oldModel.collection.drop();
-    this.key = newKey;
+    // use the new projectionStateKey everywhere.
+    this.projectionStateKey = newKey;
     // save the key in the database so we don't have to rebuild the data on startup
-    this.setKey(activeState.key);
+    this.setKey(key);
   }
 }

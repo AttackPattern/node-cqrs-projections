@@ -18,10 +18,12 @@ function fromStoredEvent(event) {
 }
 
 export default class EventStore {
-  constructor({ db, projectionState, activeState }) {
+  constructor({ db, projectionState, stores }) {
     this.subscriptions = [];
     this.projectionState = projectionState;
-    this.activeState = activeState;
+    this.currentState = 'starting';
+    this.stores = stores;
+
 
     this.queue = queue(async (event, callback) => {
       console.log(`Event: ${event.aggregateId} ${event.aggregate}.${event.type}`);
@@ -39,8 +41,8 @@ export default class EventStore {
           }) : console.log(err);
         }
       }));
-      if (this.activeState.state === 'resetting' && this.queue.length() === 0) {
-        await this.activeState.swap && this.activeState.swap();
+      if (this.currentState === 'resetting' && this.queue.length() === 0) {
+        await this.finishReset();
       }
       return callback();
     });
@@ -54,14 +56,28 @@ export default class EventStore {
     this.consumeEventStream();
   }
 
+  async finishReset() {
+    await Promise.all(this.stores.map(async p => p.swap && await p.swap()));
+    this.setState('running');
+  }
+
   subscribe(projection) {
     this.subscriptions.push(projection);
+  }
+
+  getState() {
+    return this.currentState;
+  }
+  setState(state) {
+    this.currentState = state;
   }
 
   consumeEventStream = async () => {
     let bookmark = await this.projectionState.bookmark();
     let { events, bookmark: newBookmark, lastBookmark } = await this.getNextEvents(bookmark);
-
+    if (this.currentState === 'starting' && newBookmark === lastBookmark) {
+      this.setState('running');
+    }
     if (events.length) {
       events.forEach(event => {
         this.queue.push(event);
@@ -99,7 +115,8 @@ export default class EventStore {
     }
   }
 
-  reset = async activeState => {
-    await this.projectionState.reset(activeState);
+  reset = async key => {
+    this.currentState = 'resetting';
+    await this.projectionState.reset(key);
   }
 }

@@ -19,7 +19,6 @@ export default class Projections {
     const projectionState = new SqlProjectionState();
 
     const key = await projectionState.getActiveKey();
-    let projectionActiveState = { key, state: 'running', swap: null };
 
     const stores = Object.entries(storeFolder)
       .reduce((result, { [0]: name, [1]: Store }) => {
@@ -36,7 +35,7 @@ export default class Projections {
     const sqlEventFeed = new SqlEventFeed({
       db,
       projectionState,
-      activeState: projectionActiveState
+      stores: Object.values(stores)
     });
     Object.values(stores).filter(store => store.onEvent).forEach(p => sqlEventFeed.subscribe(e => p.onEvent(e)));
 
@@ -44,7 +43,7 @@ export default class Projections {
     return {
       routers: {
         projection: new ProjectionRouter(views),
-        test: new TestRouter(Object.values(stores), sqlEventFeed, projectionActiveState)
+        test: new TestRouter(Object.values(stores), sqlEventFeed)
       },
       middleware: {
         identity: new IdentityMiddleware(new AuthTokenMapper({
