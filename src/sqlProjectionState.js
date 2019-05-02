@@ -90,7 +90,7 @@ export default class ProjectionState {
 
     oldModel.collection.drop();
     // use the new projectionStateKey everywhere.
-    this.projectionStateKey = newKey;
+    this.projectionStateKey = newProjectionStateKey;
     // save the key in the database so we don't have to rebuild the data on startup
     this.setKey(key);
   }

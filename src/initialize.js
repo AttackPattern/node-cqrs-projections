@@ -37,6 +37,10 @@ export default class Projections {
       projectionState,
       stores: Object.values(stores)
     });
+    // if we have an active key, lets make sure and swap the projection stores over to the keyed version of the model
+    if (key) {
+      Object.values(stores).filter(store => store.reset).forEach(p => p.reset(key));
+    }
     Object.values(stores).filter(store => store.onEvent).forEach(p => sqlEventFeed.subscribe(e => p.onEvent(e)));
 
 
