@@ -23,7 +23,7 @@ export default class ProjectionState {
       // change over ProjectionState key as well.
       if (state?.key) {
         this.projectionStateKey = `${defaultKey}.${state?.key}`;
-        this.ProjectionStateModel = mongoose.model(this.key, ProjectionStateSchema);
+        this.ProjectionStateModel = mongoose.model(this.projectionStateKey, ProjectionStateSchema);
       }
       return state?.key || '';
   }
