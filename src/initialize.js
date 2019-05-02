@@ -22,7 +22,7 @@ export default class Projections {
 
     const stores = Object.entries(storeFolder)
       .reduce((result, { [0]: name, [1]: Store }) => {
-        result[name] = container.resolve(Store, { activeKey: key });
+        result[name] = container.resolve(Store);
         return result;
       }, {});
 
