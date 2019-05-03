@@ -16,6 +16,7 @@ export default class TestRouter extends Router {
         ctx.status = 503;
         return ctx.body = 'Projections are still being built';
       }
+      sqlEventFeed.setState('resetting');
       // generate a new active state key to swap our projection writes over to
       const key = uuidV4();
       // have all stores switch their write model over to the new key

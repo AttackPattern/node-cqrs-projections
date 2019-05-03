@@ -39,7 +39,10 @@ export default class Projections {
     });
     // if we have an active key, lets make sure and swap the projection stores over to the keyed version of the model
     if (key) {
-      await Promise.all(Object.values(stores).map(async p => p.reset && await p.reset(key)));
+      await Promise.all(Object.values(stores).map(async p => {
+        p.reset && await p.reset(key);
+        p.swap && await p.swap();
+      }));
     }
     Object.values(stores).filter(store => store.onEvent).forEach(p => sqlEventFeed.subscribe(e => p.onEvent(e)));
 
