@@ -10,8 +10,15 @@ import projectionStore from './projectionStore';
 import Identity from './identity';
 
 export default class Projections {
+
   static initialize = async ({ container, config, db, storeFolder, viewFolder, identityMapper = token => new Identity(token) }) => {
     container.register('db', () => db);
+
+    await projectionStore(config('connections').mongoUrl);
+
+    const projectionState = new SqlProjectionState();
+
+    const key = await projectionState.getActiveKey();
 
     const stores = Object.entries(storeFolder)
       .reduce((result, { [0]: name, [1]: Store }) => {
@@ -27,11 +34,15 @@ export default class Projections {
 
     const sqlEventFeed = new SqlEventFeed({
       db,
-      projectionState: new SqlProjectionState()
+      projectionState,
+      stores: Object.values(stores)
     });
+    // if we have an active key, lets make sure and swap the projection stores over to the keyed version of the model
+    if (key) {
+      await Promise.all(Object.values(stores).map(async p => p.reset && await p.reset(key)));
+    }
     Object.values(stores).filter(store => store.onEvent).forEach(p => sqlEventFeed.subscribe(e => p.onEvent(e)));
 
-    await projectionStore(config('connections').mongoUrl);
 
     return {
       routers: {
