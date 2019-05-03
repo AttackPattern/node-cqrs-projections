@@ -38,7 +38,7 @@ export default class TestRouter extends Router {
           return ctx.body = 'Projections is building';
         default:
           ctx.status = 200;
-          return ctx.body = 'Projection with subscriber dependency';
+          return ctx.body = 'OK';
       }
 
     });

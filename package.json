@@ -1,6 +1,6 @@
 {
   "name": "@facetdev/node-cqrs-projections",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Library of base classes for Node CQRS projections implementation",
   "main": "index.js",
   "scripts": {
