@@ -11,7 +11,8 @@ export default class TestRouter extends Router {
       if (state === 'resetting') {
         ctx.status = 200;
         return ctx.body = 'Reset already in progress';
-      } else if (state === 'starting') {
+      }
+      else if (state === 'starting') {
         ctx.status = 503;
         return ctx.body = 'Projections are still being built';
       }
