@@ -75,7 +75,8 @@ export default class EventStore {
   consumeEventStream = async () => {
     let bookmark = await this.projectionState.bookmark();
     let { events, bookmark: newBookmark, lastBookmark } = await this.getNextEvents(bookmark);
-    if (this.currentState === 'starting' && newBookmark === lastBookmark) {
+    // if we delete an event at the top and restart, we can end up with a newBookmark > last (versus ===)
+    if (this.currentState === 'starting' && newBookmark >= lastBookmark) {
       this.setState('running');
     }
     if (events.length) {
