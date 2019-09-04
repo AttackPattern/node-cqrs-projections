@@ -41,9 +41,6 @@ export default class EventStore {
           }) : console.log(err);
         }
       }));
-      if (this.currentState === 'resetting' && this.queue.length() === 0) {
-        await this.finishReset();
-      }
       return callback();
     });
 
@@ -76,8 +73,13 @@ export default class EventStore {
     let bookmark = await this.projectionState.bookmark();
     let { events, bookmark: newBookmark, lastBookmark } = await this.getNextEvents(bookmark);
     // if we delete an event at the top and restart, we can end up with a newBookmark > last (versus ===)
-    if (this.currentState === 'starting' && newBookmark >= lastBookmark) {
+    if (this.currentState === 'starting' && newBookmark >= lastBookmark && this.queue.length() === 0) {
+      console.log('Projections is now built and entering "Running" state');
       this.setState('running');
+    }
+    else if (this.currentState === 'resetting' && newBookmark >= lastBookmark && this.queue.length() === 0) {
+      console.log('we are prob done resetting');
+      await this.finishReset();
     }
     if (events.length) {
       events.forEach(event => {
