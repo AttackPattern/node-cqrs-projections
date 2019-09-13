@@ -120,5 +120,6 @@ export default class EventStore {
 
   reset = async key => {
     await this.projectionState.reset(key);
+    this.setState('resetting');
   }
 }

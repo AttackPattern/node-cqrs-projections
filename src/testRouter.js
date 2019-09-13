@@ -8,7 +8,7 @@ export default class TestRouter extends Router {
 
     this.get('/reset', async ctx => {
       const state = sqlEventFeed.getState();
-      if (state === 'resetting') {
+      if (state === 'resetting' || state === 'reset-start') {
         ctx.status = 200;
         return ctx.body = 'Reset already in progress';
       }
@@ -17,8 +17,8 @@ export default class TestRouter extends Router {
         return ctx.body = 'Projections are still being built';
       }
       console.log('setting state to resetting');
-      sqlEventFeed.setState('resetting');
       // generate a new active state key to swap our projection writes over to
+      sqlEventFeed.setState('reset-start');
       const key = uuidV4();
       // have all stores switch their write model over to the new key
       await Promise.all(stores.map(async p => p.reset && await p.reset(key)));
