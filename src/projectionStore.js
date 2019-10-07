@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 let connection = null;
+mongoose.set('useFindAndModify', false);
 
 mongoose.connection
   .on('error', function (error) {
