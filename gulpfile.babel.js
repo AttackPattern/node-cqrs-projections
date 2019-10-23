@@ -1,5 +1,3 @@
-import '@babel/polyfill';
-
 import BUILD_CONFIG from './buildConfig';
 
 import gulp from 'gulp';
