@@ -45,7 +45,6 @@ export default class EventStore {
     });
 
     this.Event = bookshelf(db.knex('eventstore'))
-      .plugin('pagination')
       .Model.extend({
         tableName: 'events'
       });
