@@ -7,6 +7,6 @@ export default class AuthTokenMapper {
   }
 
   verify = async token => this.identityMapper(
-    await jwt.verify((await jwt.verify(token, this.secret)).identity, this.secret)
+    await jwt.verify(token, this.secret)
   )
 }
