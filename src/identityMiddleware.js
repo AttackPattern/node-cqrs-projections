@@ -7,7 +7,9 @@ export default class IdentityMiddleware {
 
   inject = async (ctx, next) => {
     try {
-      ctx.$identity = await this.getIdentity(ctx);
+      const identity = await this.getIdentity(ctx);
+      if (identity?.claims?.require2fa) throw new Error('2FA verification required');
+      ctx.$identity = identity;
       await next();
     }
     catch (err) {
