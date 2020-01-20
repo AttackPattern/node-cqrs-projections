@@ -16,7 +16,7 @@ export default class IdentityMiddleware {
       console.log('Failed validating authentication token', err.message);
       ctx.status = 401;
       ctx.body = {
-        error: err.name || 'Failed validating authentication token'
+        error: err.message || 'Failed validating authentication token'
       };
     }
   }
